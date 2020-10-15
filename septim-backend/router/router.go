@@ -3,10 +3,20 @@ package router
 import (
 	"net/http"
 
+	"github.com/jonathanhaposan/septim/septim-backend/common/webserver"
+	"github.com/jonathanhaposan/septim/septim-backend/handler"
+	jsoniter "github.com/json-iterator/go"
+
 	"github.com/julienschmidt/httprouter"
 )
 
-var r *httprouter.Router
+var (
+	jsoni = jsoniter.ConfigCompatibleWithStandardLibrary
+	r     *httprouter.Router
+	hndlr handler.Handler
+)
+
+type handlerFunc func(http.ResponseWriter, *http.Request, httprouter.Params) webserver.Response
 
 func InitializeRoute() *httprouter.Router {
 	r = httprouter.New()
@@ -18,10 +28,10 @@ func InitializeRoute() *httprouter.Router {
 }
 
 func registerRoutes() {
-	r.GET("/purchase", nil)
-	r.GET("/purchase/:id", nil)
-	r.PUT("/purchase/:id", nil)
-	r.POST("/purchase", nil)
+	register(http.MethodGet, "/transaction", hndlr.GetTransactionList)
+	register(http.MethodGet, "/transaction/:id", nil)
+	register(http.MethodPut, "/transaction/:id", nil)
+	register(http.MethodPost, "/transaction", nil)
 }
 
 func allowCORS() {
@@ -35,4 +45,31 @@ func allowCORS() {
 
 		w.WriteHeader(http.StatusNoContent)
 	})
+}
+
+func register(method, path string, fn handlerFunc) {
+	r.Handle(method, path, handle(fn))
+}
+
+func handle(fn handlerFunc) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		result := fn(w, r, ps)
+
+		b, err := jsoni.Marshal(result)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+
+		if result.Success {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
+
+		}
+
+		w.Write(b)
+	}
 }
