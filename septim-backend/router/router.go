@@ -13,13 +13,15 @@ import (
 var (
 	jsoni = jsoniter.ConfigCompatibleWithStandardLibrary
 	r     *httprouter.Router
-	hndlr handler.Handler
+	hndlr *handler.Handler
 )
 
 type handlerFunc func(http.ResponseWriter, *http.Request, httprouter.Params) webserver.Response
 
-func InitializeRoute() *httprouter.Router {
+func InitializeRoute(handler *handler.Handler) *httprouter.Router {
 	r = httprouter.New()
+
+	hndlr = handler
 
 	allowCORS()
 	registerRoutes()

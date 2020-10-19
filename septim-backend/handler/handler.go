@@ -1,8 +1,14 @@
 package handler
 
-type Handler struct{}
+import "github.com/jonathanhaposan/septim/septim-backend/internal/repository"
 
-func Initialize() *Handler {
+type Handler struct {
+	repository *repository.Repository
+}
 
-	return &Handler{}
+func Initialize(repository *repository.Repository) *Handler {
+
+	return &Handler{
+		repository: repository,
+	}
 }

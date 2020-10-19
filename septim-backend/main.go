@@ -6,6 +6,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/jonathanhaposan/septim/septim-backend/component/db"
+	"github.com/jonathanhaposan/septim/septim-backend/handler"
+	"github.com/jonathanhaposan/septim/septim-backend/internal/repository"
 	"github.com/jonathanhaposan/septim/septim-backend/router"
 	"github.com/jonathanhaposan/septim/septim-backend/server"
 
@@ -17,7 +20,10 @@ var (
 )
 
 func init() {
-	appRouter = router.InitializeRoute()
+	mongoClient := db.NewMongoDB()
+	repository := repository.NewRepository(mongoClient)
+	handler := handler.Initialize(repository)
+	appRouter = router.InitializeRoute(handler)
 }
 
 func main() {

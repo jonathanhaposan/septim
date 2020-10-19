@@ -1,5 +1,10 @@
 package webserver
 
+type Writer interface {
+	Success(interface{}) Response
+	Failed(string) Response
+}
+
 type Response struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data"`
