@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/jonathanhaposan/septim/septim-backend/common/consts"
@@ -29,4 +31,28 @@ func (h *Handler) GetTransactionList(w http.ResponseWriter, r *http.Request, ps 
 		Summary:      summary,
 		Transactions: result,
 	})
+}
+
+func (h *Handler) AddTransaction(w http.ResponseWriter, r *http.Request, ps httprouter.Params) webserver.Response {
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("failed read body", err)
+		return webserver.Failed(err.Error())
+	}
+	defer r.Body.Close()
+
+	var trx = &model.Transaction{}
+	err = jsoni.Unmarshal(body, trx)
+	if err != nil {
+		log.Println("failed unmarshal json", string(body), err)
+		return webserver.Failed(err.Error())
+	}
+
+	err = h.repository.InsertOneTransaction(trx)
+	if err != nil {
+		return webserver.Failed(err.Error())
+	}
+
+	return webserver.Success(nil)
 }

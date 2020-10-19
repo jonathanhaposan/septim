@@ -33,7 +33,7 @@ func registerRoutes() {
 	register(http.MethodGet, "/transaction", hndlr.GetTransactionList)
 	register(http.MethodGet, "/transaction/:id", nil)
 	register(http.MethodPut, "/transaction/:id", nil)
-	register(http.MethodPost, "/transaction", nil)
+	register(http.MethodPost, "/transaction", hndlr.AddTransaction)
 }
 
 func allowCORS() {
